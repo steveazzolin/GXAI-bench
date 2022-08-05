@@ -25,7 +25,7 @@ class PGExplainer(_BaseExplainer):
                  coeff_size: float = 0.01, coeff_ent: float = 5e-4,
                  t0: float = 5.0, t1: float = 2.0,
                  lr: float = 0.003, max_epochs: int = 20, eps: float = 1e-3,
-                 num_hops: int = None):
+                 num_hops: int = None, device: str = "cuda"):
         """
         Args:
             model (torch.nn.Module): model on which to make predictions
@@ -65,6 +65,8 @@ class PGExplainer(_BaseExplainer):
             in_channels = mult * self.emb_layer.nn.out_features
         elif isinstance(self.emb_layer, torch.nn.Linear):
             in_channels = mult * self.emb_layer.out_features
+        else:
+            in_channels = mult * self.emb_layer.out_channels
 
         self.elayers = nn.ModuleList(
             [nn.Sequential(
@@ -86,6 +88,11 @@ class PGExplainer(_BaseExplainer):
             random_noise = torch.log(random_noise) - torch.log(1.0 - random_noise)
             gate_inputs = (random_noise + log_alpha) / beta
             gate_inputs = gate_inputs.sigmoid()
+            gate_inputs = log_alpha.sigmoid()
+            # gate_inputs_hard = gate_inputs.clone()
+            # gate_inputs_hard[gate_inputs >= 0.5] = 1
+            # gate_inputs_hard[gate_inputs < 0.5] = 0
+            # gate_inputs = gate_inputs_hard - gate_inputs.detach() + gate_inputs
         else:
             gate_inputs = log_alpha.sigmoid()
 

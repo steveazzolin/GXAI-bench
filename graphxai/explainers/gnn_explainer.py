@@ -1,5 +1,4 @@
 import torch
-import ipdb
 
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data

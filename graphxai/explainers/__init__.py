@@ -2,7 +2,7 @@ from .subgraphx import SubgraphX
 from .cam import CAM, GradCAM
 from .guidedbp import GuidedBP
 from .gnn_lrp import GNN_LRP
-from .random import RandomExplainer
+#from .random import RandomExplainer
 from .grad import GradExplainer
 from .integrated_grad import IntegratedGradExplainer
 from .graphlime import GraphLIME
