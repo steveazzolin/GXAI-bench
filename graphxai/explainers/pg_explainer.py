@@ -25,7 +25,8 @@ class PGExplainer(_BaseExplainer):
                  coeff_size: float = 0.01, coeff_ent: float = 5e-4,
                  t0: float = 5.0, t1: float = 2.0,
                  lr: float = 0.003, max_epochs: int = 20, eps: float = 1e-3,
-                 num_hops: int = None, device: str = "cuda"):
+                 num_hops: int = None, device: str = "cuda",
+                 in_channels: int = None, expl_hidden_dim:int = 64):
         """
         Args:
             model (torch.nn.Module): model on which to make predictions
@@ -59,20 +60,21 @@ class PGExplainer(_BaseExplainer):
 
         mult = 2 # if self.explain_graph else 3
 
-        if isinstance(self.emb_layer, GCNConv):
-            in_channels = mult * self.emb_layer.out_channels
-        elif isinstance(self.emb_layer, GINConv):
-            in_channels = mult * self.emb_layer.nn.out_features
-        elif isinstance(self.emb_layer, torch.nn.Linear):
-            in_channels = mult * self.emb_layer.out_features
-        else:
-            in_channels = mult * self.emb_layer.out_channels
+        if in_channels is None:
+            if isinstance(self.emb_layer, GCNConv):
+                in_channels = mult * self.emb_layer.out_channels
+            elif isinstance(self.emb_layer, GINConv):
+                in_channels = mult * self.emb_layer.nn.out_features
+            elif isinstance(self.emb_layer, torch.nn.Linear):
+                in_channels = mult * self.emb_layer.out_features
+            else:
+                in_channels = mult * self.emb_layer.out_channels
 
         self.elayers = nn.ModuleList(
             [nn.Sequential(
-                nn.Linear(in_channels, 64),
+                nn.Linear(in_channels, expl_hidden_dim),
                 nn.ReLU()),
-             nn.Linear(64, 1)]).to(device)
+             nn.Linear(expl_hidden_dim, 1)]).to(device)
 
     def __concrete_sample(self, log_alpha: torch.Tensor,
                           beta: float = 1.0, training: bool = True):
